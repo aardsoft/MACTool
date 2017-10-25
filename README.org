@@ -1,0 +1,77 @@
+* MACTool for Arduino
+
+This is a small helper library for generating and validating MAC addresses as strings as well as converting them to =byte= for use by various Ethernet libraries. The internal representation is a C string, assuming that after initialising the network interface it'll mostly be used for logging in a human readable form, therefore making printing easier.
+
+Note that the random number generator needs to be initialised with a random seed from an unused analogue pin (like =randomSeed(analogRead(3))=) to generate truly random (and therefore useful) MAC addresses.
+
+While it could be used to to generate a new MAC address on every reset it is best used with the [[https://www.arduino.cc/en/Reference/EEPROM][EEPROM library]] to generate permanent MAC addresses stored in the EEPROM. Doing this removes the need of compiling different firmware variants just to configure MAC addresses. An example for just storing the MAC address can be found in [[./mac_example/mac_example.ino][mac_example.ino]].
+
+To avoid multiple firmware variants completely it is easiest to define a struct containing customisable variables and store this struct in the EEPROM. The MAC address should be stored in a known not to change location at the very beginning of the struct to allow changes in the data structure without losing the device specific MAC:
+
+#+begin_src C++
+#define EEPROM_MAGIC 0xDEAD
+struct ConfigData {
+    // magic to identify if the configuration is compatible
+    unsigned int magic;
+    // MAC address used by this device
+    char mac[18];
+    // node name reported by this device
+    char node[20];
+    // baud rate used for the serial port
+    unsigned int baud_rate;
+};
+
+ConfigData data;
+#+end_src
+
+This example defines a magic to identify if the configuration section is compatible with the structure of the current firmware. If not, the firmware can try to migrate to the new structure, or reset it to defaults. The MAC address is at a fixed offset from the beginning of the struct, so even if the magic number changed, and the rest of the struct contains garbage the read MAC is still valid.
+
+In practice it'll be required to check the MAC and the rest of the configuration in two steps:
+
+#+begin_src c++
+  EEPROM.get(0, data);
+
+  if (!validate_MAC(data.mac)){
+    generate_MAC(data.mac);
+    // either write the MAC back, or mark a configuration change to trigger
+    // later write back. Just marking will reduce amount of flash writes when
+    // the whole configuration is corrupt.
+  }
+
+  if (data.magic != EEPROM_MAGIC){
+    data.magic = EEPROM_MAGIC;
+    // reset data to defaults or migrate to new version, not touching the MAC
+    // then write back the data with EEPROM.put(0, data);
+  }
+#+end_src
+
+* Implemented functions
+** bool validate_MAC(char *mac_string)
+
+Check if the given MAC is valid. Current checks are:
+
+ * are the octets separated by ':'
+ * is each octet within the allowed range
+ * are there exactly 6 octets
+
+Return values are =true= for a valid MAC, =false= for an invalid MAC. A return value of =false= should be used to trigger generation (and possibly storage) of a valid MAC through =generate_MAC()=.
+
+** void generate_MAC(char *mac_string)
+
+Generate a new random MAC in =mac_string= by filling the last three octets of the MAC prefix configured in the library (default: 06:DE:AD:00:00:00) with random hex digits.
+
+This function will only generate random addresses if the random number generator has been properly seeded before!
+
+** void MAC_to_byte(char *mac_string, byte *mac_byte)
+
+Convert a MAC address stored as C string to a byte array as required by Arduinos Ethernet API. Before calling this function the MAC should be verified using =validate_MAC()=, and re-generated with =generate_MAC()=, if necessary.
+
+An Ethernet initialisation with DHCP once MAC correctness has been established looks like this:
+
+#+begin_src C++
+  byte mac_b[8];
+  MAC_to_byte(mac, mac_b);
+  if (Ethernet.begin(mac_b) == 0){
+    // ...
+  }
+#+end_src
