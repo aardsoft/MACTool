@@ -8,6 +8,33 @@
 #ifndef _MACTOOL_H
 #define _MACTOOL_H
 
+#include <EEPROM.h>
+
+#ifndef MACTOOL_USE_PERSISTENT_CONFIGURATION
+#define MACTOOL_USE_PERSISTENT_CONFIGURATION 1
+#endif
+
+#if MACTOOL_USE_PERSISTENT_CONFIGURATION > 0
+#include <PersistentConfiguration.h>
+#endif
+
+#ifndef MACTOOL_INIT_RAND
+#define MACTOOL_INIT_RAND 1
+#endif
+
+#ifndef MACTOOL_SEED_PIN
+#define MACTOOL_SEED_PIN 3
+#endif
+
+
+/*
+ * Check if the configuration data contains a valid MAC address. If not,
+ * generate one and mark the configuration data as changed.
+ */
+#if MACTOOL_USE_PERSISTENT_CONFIGURATION > 0
+void init_MAC();
+#endif
+
 /*
  * Validate if each octet is within the allowed range, as well if there
  * are exactly 6 octets. If those tests fail return false to trigger

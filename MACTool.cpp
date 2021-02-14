@@ -18,6 +18,19 @@
  */
 char mac_prefix[18] = "06:DE:AD:00:00:00";
 
+#if MACTOOL_USE_PERSISTENT_CONFIGURATION > 0
+void init_MAC(){
+#if MACTOOL_INIT_RAND > 0
+  randomSeed(analogRead(MACTOOL_SEED_PIN));
+#endif
+
+  if (!validate_MAC(config.mac)){
+    generate_MAC(config.mac);
+    state.config_changed = true;
+  }
+}
+#endif
+
 bool validate_MAC(char *mac_string){
   char mac_address[18];
   char *t_ptr;

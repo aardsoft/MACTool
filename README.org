@@ -1,6 +1,20 @@
-* MACTool for Arduino
+* MACTool for Arduino                                                 :TOC_4:
+  - [[#introduction][Introduction]]
+  - [[#configuration-options][Configuration options]]
+    - [[#mactool_use_persistent_configuration][MACTOOL_USE_PERSISTENT_CONFIGURATION]]
+    - [[#mactool_init_rand][MACTOOL_INIT_RAND]]
+    - [[#mactool_seed_pin][MACTOOL_SEED_PIN]]
+  - [[#implemented-functions][Implemented functions]]
+    - [[#void-init_mac][void init_MAC()]]
+    - [[#bool-validate_macchar-mac_string][bool validate_MAC(char *mac_string)]]
+    - [[#void-generate_macchar-mac_string][void generate_MAC(char *mac_string)]]
+    - [[#void-mac_to_bytechar-mac_string-byte-mac_byte][void MAC_to_byte(char *mac_string, byte *mac_byte)]]
+
+** Introduction
 
 This is a small helper library for generating and validating MAC addresses as strings as well as converting them to =byte= for use by various Ethernet libraries. The internal representation is a C string, assuming that after initialising the network interface it'll mostly be used for logging in a human readable form, therefore making printing easier.
+
+The current library version offloads most of what is described in the next paragraphs to [[https://github.com/bwachter/PersistentConfiguration][PersistentConfiguration]], and automatically initialises the random seed. It still is a useful read, though, and by defining MACTOOL_USE_PERSISTENT_CONFIGURATION to 0 the old behaviour can be restored. When using PersistentConfiguration make sure to check out the (shorter) example code in that documentation as well - it also shows how to use the MACTool library.
 
 Note that the random number generator needs to be initialised with a random seed from an unused analogue pin (like =randomSeed(analogRead(3))=) to generate truly random (and therefore useful) MAC addresses.
 
@@ -45,8 +59,18 @@ In practice it'll be required to check the MAC and the rest of the configuration
   }
 #+end_src
 
-* Implemented functions
-** bool validate_MAC(char *mac_string)
+** Configuration options
+Configuration options can be changed using defines in the main sketch. The following defines are available:
+*** MACTOOL_USE_PERSISTENT_CONFIGURATION
+When set to 1 (default), use [[https://github.com/bwachter/PersistentConfiguration][the PersistentConfiguration]] library. This also makes the init_MAC() function available.
+*** MACTOOL_INIT_RAND
+When set to 1 (default), have init_MAC() initialize the random seed.
+*** MACTOOL_SEED_PIN
+Specifies the seed pen for initializing the random seed (default: 3). This pin should be an unused analog pin.
+** Implemented functions
+*** void init_MAC()
+This function is only available when MACTOOL_USE_PERSISTENT_CONFIGURATION is defined as 1 (the default). In this case this validates the MAC address, generates one if needed, and marks the configuration as changed. It also initialises the random seed, unless disabled.
+*** bool validate_MAC(char *mac_string)
 
 Check if the given MAC is valid. Current checks are:
 
@@ -56,13 +80,13 @@ Check if the given MAC is valid. Current checks are:
 
 Return values are =true= for a valid MAC, =false= for an invalid MAC. A return value of =false= should be used to trigger generation (and possibly storage) of a valid MAC through =generate_MAC()=.
 
-** void generate_MAC(char *mac_string)
+*** void generate_MAC(char *mac_string)
 
 Generate a new random MAC in =mac_string= by filling the last three octets of the MAC prefix configured in the library (default: 06:DE:AD:00:00:00) with random hex digits.
 
 This function will only generate random addresses if the random number generator has been properly seeded before!
 
-** void MAC_to_byte(char *mac_string, byte *mac_byte)
+*** void MAC_to_byte(char *mac_string, byte *mac_byte)
 
 Convert a MAC address stored as C string to a byte array as required by Arduinos Ethernet API. Before calling this function the MAC should be verified using =validate_MAC()=, and re-generated with =generate_MAC()=, if necessary.
 
