@@ -16,7 +16,7 @@
  * will be replaced with random numbers. MAC addresses are
  * permanent.
  */
-char mac_prefix[18] = "06:DE:AD:00:00:00";
+char mac_prefix[18] = MACTOOL_MAC_PREFIX;
 
 #if MACTOOL_USE_PERSISTENT_CONFIGURATION > 0
 void init_MAC(){

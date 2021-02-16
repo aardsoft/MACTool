@@ -4,6 +4,7 @@
     - [[#mactool_use_persistent_configuration][MACTOOL_USE_PERSISTENT_CONFIGURATION]]
     - [[#mactool_init_rand][MACTOOL_INIT_RAND]]
     - [[#mactool_seed_pin][MACTOOL_SEED_PIN]]
+    - [[#mactool_mac_prefix][MACTOOL_MAC_PREFIX]]
   - [[#implemented-functions][Implemented functions]]
     - [[#void-init_mac][void init_MAC()]]
     - [[#bool-validate_macchar-mac_string][bool validate_MAC(char *mac_string)]]
@@ -68,6 +69,8 @@ When set to 1 (default), use [[https://github.com/bwachter/PersistentConfigurati
 When set to 1 (default), have init_MAC() initialize the random seed.
 *** MACTOOL_SEED_PIN
 Specifies the seed pen for initializing the random seed (default: 3). This pin should be an unused analog pin.
+*** MACTOOL_MAC_PREFIX
+Specifies a template for MAC addresses to use. Should be a full length address with the last 6 digits set to 0. The default is ="06:DE:AD:00:00:00"=
 ** Implemented functions
 *** void init_MAC()
 This function is only available when MACTOOL_USE_PERSISTENT_CONFIGURATION is defined as 1 (the default). In this case this validates the MAC address, generates one if needed, and marks the configuration as changed. It also initialises the random seed, unless disabled.

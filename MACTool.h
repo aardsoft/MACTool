@@ -18,6 +18,10 @@
 #include <PersistentConfiguration.h>
 #endif
 
+#ifndef MACTOOL_MAC_PREFIX
+#define MACTOOL_MAC_PREFIX "06:DE:AD:00:00:00"
+#endif
+
 #ifndef MACTOOL_INIT_RAND
 #define MACTOOL_INIT_RAND 1
 #endif
