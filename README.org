@@ -9,6 +9,7 @@
     - [[#bool-validate_macchar-mac_string][bool validate_MAC(char *mac_string)]]
     - [[#void-generate_macchar-mac_string][void generate_MAC(char *mac_string)]]
     - [[#void-mac_to_bytechar-mac_string-byte-mac_byte][void MAC_to_byte(char *mac_string, byte *mac_byte)]]
+  - [[#hardware][Hardware]]
 
 ** Introduction
 
@@ -99,3 +100,5 @@ An Ethernet initialisation with DHCP once MAC correctness has been established l
     // ...
   }
 #+end_src
+** Hardware
+Suitable Ethernet modules are described in the [[https://github.com/aardsoft/mqtt_sensor#ethernet][hardware section of mqtt_sensor documentation]].
